@@ -29,7 +29,7 @@ jobs:
       - name: Install ARM GCC toolchain
         uses: carlosperate/arm-none-eabi-gcc-action@v1
         with:
-          release: '14.2.rel1'
+          release: '14.2.Rel1'
 
       - name: Verify toolchain
         run: |
@@ -88,7 +88,7 @@ jobs:
       - name: Install ARM GCC toolchain
         uses: carlosperate/arm-none-eabi-gcc-action@v1
         with:
-          release: '14.2.rel1'
+          release: '14.2.Rel1'
 
       - name: Verify toolchain
         run: |
@@ -147,7 +147,7 @@ jobs:
       - name: Install ARM GCC toolchain
         uses: carlosperate/arm-none-eabi-gcc-action@v1
         with:
-          release: '14.2.rel1'
+          release: '14.2.Rel1'
 
       - name: Verify toolchain
         run: |
