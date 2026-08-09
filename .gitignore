@@ -1,0 +1,138 @@
+# ============================================================
+# MCU_BOOT .gitignore
+# ============================================================
+# 任何本不该上传的产物 / 个人配置 / 密钥 都在这里集中排除。
+# 如果是首次 git add 后发现体积异常，请优先检查本文件是否覆盖完整。
+# ============================================================
+
+# ---------- 个人本地文档（开源前应整体移除）----------
+_personal_local/
+
+# ---------- Claude Code / AI 助手本地配置 ----------
+.claude/
+
+# ---------- 构建产物（C / C++ / CMake / Ninja）----------
+build/
+**/build/
+out/
+*.o
+*.obj
+*.elf
+*.bin
+*.hex
+*.dis
+*.asm
+*.map
+*.lst
+*.axf
+*.dep
+*.d
+
+# ---------- C# / .NET 上位机构建产物 ----------
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+*.userprefs
+*.cache
+*.pidb
+*.swp
+
+# ---------- Python 签名工具 ----------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ⚠️ ECDSA 私钥 + 自动生成的公钥头文件 —— 绝对不能进 Git
+tool/sign_tool/private_key.pem
+tool/sign_tool/ecdsa_pubkey.h
+**/private_key.pem
+**/public_key.pem
+
+# ---------- IDE / 编辑器 ----------
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userprefs
+# VS Code：保留 launch.json / settings.json 作为团队共享配置，仅排除本机工作区状态
+.vscode/*.code-workspace
+.vscode/history/
+.vscode/.ropeproject/
+# IntelliJ / CLion
+.idea/
+*.iml
+# Eclipse
+.metadata/
+.settings/
+.project
+.cproject
+# Keil MDK
+*.uvguix.*
+*.uvoptx
+*.scvd
+*.bak
+# IAR EWARM
+settings/
+DependInfo.cmake
+# Sublime / Vim
+*.swp
+*.swo
+*~
+# OS
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# ---------- CMake / 编译数据库 ----------
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+install_manifest.txt
+compile_commands.json
+*.cmake
+
+# ---------- clangd 缓存 ----------
+.cache/
+.clangd/
+
+# ---------- STM32CubeMX 备份 ----------
+*.ioc.bak
+*.mxproject.bak
+
+# ---------- HC32 厂商 SDK（不应 redistribute，体积 100MB+）----------
+projects/hc32f460/examples/HC32F460_DDL_Rev*/
+
+# ---------- STM32CubeMX firmware package 里项目用不到的大目录 ----------
+# bootloader 不使用 DSP / NN / RTOS / DAP / 预编译 .a 库 / Cortex-A 头文件
+# 这些占 60+ MB，但 CMakeLists 没引用，删除后工程仍能编译
+**/Drivers/CMSIS/DSP/
+**/Drivers/CMSIS/NN/
+**/Drivers/CMSIS/Lib/
+**/Drivers/CMSIS/RTOS/
+**/Drivers/CMSIS/RTOS2/
+**/Drivers/CMSIS/Core_A/
+**/Drivers/CMSIS/DAP/
+**/Drivers/CMSIS/docs/
+**/Drivers/CMSIS/Documentation/
+**/Drivers/CMSIS/DSP_Lib_TestSuite/
+**/Drivers/CMSIS/Examples/
+
+# ---------- Keil MDK 编译日志（可能含 license key）----------
+*.build_log.htm
+*.build_log.htm.bak
+
+# ---------- 调试 / 临时文件 ----------
+*.log
+*.tmp
+*.orig

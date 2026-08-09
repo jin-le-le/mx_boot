@@ -1,0 +1,24 @@
+# Dependabot 配置：保持签名工具的 Python 依赖（ecdsa）及时更新
+# 上位机是 C# / .NET，但走 NuGet 不在这个仓库的依赖管理范围
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/tool/sign_tool"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - python
+    commit-message:
+      prefix: "chore(sign_tool)"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    labels:
+      - dependencies
+      - ci
+    commit-message:
+      prefix: "chore(ci)"

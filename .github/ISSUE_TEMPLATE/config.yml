@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 项目文档
+    url: https://github.com/jinle/mcu_boot/blob/main/README.md
+    about: 阅读项目文档（README、PORTING_GUIDE、PROTOCOL_SPEC、IMAGE_FORMAT）后再提问
+  - name: 🔒 安全漏洞披露
+    url: https://github.com/jinle/mcu_boot/security/advisories/new
+    about: 发现签名绕过 / 防回滚失效等安全问题？请走 Security Advisory 流程，不要开公开 Issue
+  - name: 💬 通用讨论
+    url: https://github.com/jinle/mcu_boot/discussions
+    about: 移植思路 / 设计讨论 / 使用问题等适合放在 Discussions

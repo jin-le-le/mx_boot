@@ -1,0 +1,19 @@
+{
+    "C_Cpp.default.compileCommands": "${workspaceFolder}/projects/stm32f407/build/compile_commands.json",
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "clangd.arguments": [
+        "--compile-commands-dir=projects/stm32f407/build",
+        "--header-insertion=never",
+        "-j=4"
+    ],
+    "files.associations": {
+        "*.h": "c",
+        "*.c": "c"
+    },
+    "search.exclude": {
+        "**/build": true,
+        "**/obj": true,
+        "**/bin": true,
+        "**/.vs": true
+    }
+}
