@@ -7,7 +7,6 @@ on:
     branches: [main, master]
   workflow_dispatch:
 
-# 取消同一 PR 上重复 push 触发的旧 run
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -22,14 +21,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install ARM GCC toolchain
+      - name: Install build tools (cmake + ninja)
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            gcc-arm-none-eabi \
-            cmake \
-            ninja-build
+          sudo apt-get install -y cmake ninja-build
+
+      - name: Install ARM GCC toolchain
+        uses: carlosperate/arm-none-eabi-gcc-action@v1
+        with:
+          release: '14.2.rel1'
+
+      - name: Verify toolchain
+        run: |
+          which cmake
+          which ninja
+          which arm-none-eabi-gcc
+          cmake --version
+          ninja --version
           arm-none-eabi-gcc --version
+
+      - name: Verify toolchain file exists
+        working-directory: projects/stm32f407
+        run: ls -la cmake/gcc-arm-none-eabi.cmake
 
       - name: Configure
         working-directory: projects/stm32f407
@@ -45,11 +58,9 @@ jobs:
       - name: Check bootloader size constraint
         working-directory: projects/stm32f407
         run: |
-          # LinkerScript 已有 ASSERT(_boot_flash_used <= BOOTLOADER_SIZE) 编译期保护
-          # 这里再运行时校验一次，确保 .bin 不超过配额
           SIZE=$(stat -c%s build/MCU_BOOT.bin)
           echo "bootloader size: ${SIZE} bytes"
-          test "$SIZE" -lt 49152 || { echo "❌ bootloader exceeds 48KB quota"; exit 1; }
+          test "$SIZE" -lt 49152 || { echo "bootloader exceeds 48KB quota"; exit 1; }
 
       - name: Upload artifacts
         if: always()
@@ -69,14 +80,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install ARM GCC toolchain
+      - name: Install build tools (cmake + ninja)
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            gcc-arm-none-eabi \
-            cmake \
-            ninja-build
+          sudo apt-get install -y cmake ninja-build
+
+      - name: Install ARM GCC toolchain
+        uses: carlosperate/arm-none-eabi-gcc-action@v1
+        with:
+          release: '14.2.rel1'
+
+      - name: Verify toolchain
+        run: |
+          which cmake
+          which ninja
+          which arm-none-eabi-gcc
+          cmake --version
+          ninja --version
           arm-none-eabi-gcc --version
+
+      - name: Verify toolchain file exists
+        working-directory: projects/stm32f103
+        run: ls -la cmake/gcc-arm-none-eabi.cmake
 
       - name: Configure
         working-directory: projects/stm32f103
@@ -94,7 +119,7 @@ jobs:
         run: |
           SIZE=$(stat -c%s build/MCU_BOOT.bin)
           echo "bootloader size: ${SIZE} bytes"
-          test "$SIZE" -lt 24576 || { echo "❌ bootloader exceeds 24KB quota"; exit 1; }
+          test "$SIZE" -lt 24576 || { echo "bootloader exceeds 24KB quota"; exit 1; }
 
       - name: Upload artifacts
         if: always()
@@ -114,14 +139,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install ARM GCC toolchain
+      - name: Install build tools (cmake + ninja)
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            gcc-arm-none-eabi \
-            cmake \
-            ninja-build
+          sudo apt-get install -y cmake ninja-build
+
+      - name: Install ARM GCC toolchain
+        uses: carlosperate/arm-none-eabi-gcc-action@v1
+        with:
+          release: '14.2.rel1'
+
+      - name: Verify toolchain
+        run: |
+          which cmake
+          which ninja
+          which arm-none-eabi-gcc
+          cmake --version
+          ninja --version
           arm-none-eabi-gcc --version
+
+      - name: Verify toolchain file exists
+        working-directory: projects/hc32f460/boot
+        run: ls -la cmake/gcc-hc32f460.cmake
 
       - name: Configure
         working-directory: projects/hc32f460/boot
@@ -139,7 +178,7 @@ jobs:
         run: |
           SIZE=$(stat -c%s build/hc32_boot.bin)
           echo "bootloader size: ${SIZE} bytes"
-          test "$SIZE" -lt 49152 || { echo "❌ bootloader exceeds 48KB quota"; exit 1; }
+          test "$SIZE" -lt 49152 || { echo "bootloader exceeds 48KB quota"; exit 1; }
 
       - name: Upload artifacts
         if: always()
@@ -154,7 +193,7 @@ jobs:
           if-no-files-found: warn
 
   # ============================================================
-  # 签名工具冒烟测试：能 import + 签名一个 dummy bin
+  # 签名工具冒烟测试
   # ============================================================
   sign-tool-smoke:
     name: Sign tool smoke test
@@ -173,28 +212,22 @@ jobs:
       - name: Generate keys + sign dummy firmware
         working-directory: tool/sign_tool
         run: |
-          # 生成密钥对
           python generate_keys.py --outdir /tmp/keys
-
-          # 造一个假的 1KB app.bin
           python -c "open('/tmp/app.bin','wb').write(b'\\xAA' * 1024)"
-
-          # 签名
           python sign_firmware.py /tmp/app.bin \
             --key /tmp/keys/private_key.pem \
             --version 1.0.0 \
             --addr 0x08010000 \
             --out /tmp/app_signed.bin
 
-          # 校验 header
           python -c "
           import struct, binascii
           with open('/tmp/app_signed.bin', 'rb') as f:
               data = f.read()
           magic = struct.unpack('<I', data[0:4])[0]
-          assert magic == 0x4D414749, f'❌ bad magic: {magic:#x}'
+          assert magic == 0x4D414749, f'bad magic: {magic:#x}'
           hdr_crc = struct.unpack('<I', data[248:252])[0]
           calc    = binascii.crc32(data[0:248]) & 0xFFFFFFFF
-          assert hdr_crc == calc, f'❌ header CRC mismatch: {hdr_crc:#x} vs {calc:#x}'
-          print(f'✅ signed image OK: {len(data)} bytes, magic=MAGI, header CRC verified')
+          assert hdr_crc == calc, f'header CRC mismatch: {hdr_crc:#x} vs {calc:#x}'
+          print(f'signed image OK: {len(data)} bytes, magic=MAGI, header CRC verified')
           "
