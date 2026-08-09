@@ -55,11 +55,19 @@ jobs:
         working-directory: projects/stm32f407
         run: cmake --build build
 
+      - name: Generate .bin / .hex from .elf
+        working-directory: projects/stm32f407
+        run: |
+          arm-none-eabi-objcopy -O binary build/MCU_BOOT.elf build/MCU_BOOT.bin
+          arm-none-eabi-objcopy -O ihex   build/MCU_BOOT.elf build/MCU_BOOT.hex
+
       - name: Check bootloader size constraint
         working-directory: projects/stm32f407
         run: |
-          SIZE=$(stat -c%s build/MCU_BOOT.bin)
-          echo "bootloader size: ${SIZE} bytes"
+          # Use .text+.data from arm-none-eabi-size — that's actual Flash footprint
+          arm-none-eabi-size build/MCU_BOOT.elf
+          SIZE=$(arm-none-eabi-size build/MCU_BOOT.elf | awk 'NR==2 {print $1 + $2}')
+          echo "bootloader .text+.data size: ${SIZE} bytes"
           test "$SIZE" -lt 49152 || { echo "bootloader exceeds 48KB quota"; exit 1; }
 
       - name: Upload artifacts
@@ -114,11 +122,18 @@ jobs:
         working-directory: projects/stm32f103
         run: cmake --build build
 
+      - name: Generate .bin / .hex from .elf
+        working-directory: projects/stm32f103
+        run: |
+          arm-none-eabi-objcopy -O binary build/MCU_BOOT.elf build/MCU_BOOT.bin
+          arm-none-eabi-objcopy -O ihex   build/MCU_BOOT.elf build/MCU_BOOT.hex
+
       - name: Check bootloader size constraint
         working-directory: projects/stm32f103
         run: |
-          SIZE=$(stat -c%s build/MCU_BOOT.bin)
-          echo "bootloader size: ${SIZE} bytes"
+          arm-none-eabi-size build/MCU_BOOT.elf
+          SIZE=$(arm-none-eabi-size build/MCU_BOOT.elf | awk 'NR==2 {print $1 + $2}')
+          echo "bootloader .text+.data size: ${SIZE} bytes"
           test "$SIZE" -lt 24576 || { echo "bootloader exceeds 24KB quota"; exit 1; }
 
       - name: Upload artifacts
@@ -176,8 +191,10 @@ jobs:
       - name: Check bootloader size constraint
         working-directory: projects/hc32f460/boot
         run: |
-          SIZE=$(stat -c%s build/hc32_boot.bin)
-          echo "bootloader size: ${SIZE} bytes"
+          # HC32 CMakeLists has POST_BUILD objcopy, so .bin exists; but use .elf for consistency
+          arm-none-eabi-size build/hc32_boot.elf
+          SIZE=$(arm-none-eabi-size build/hc32_boot.elf | awk 'NR==2 {print $1 + $2}')
+          echo "bootloader .text+.data size: ${SIZE} bytes"
           test "$SIZE" -lt 49152 || { echo "bootloader exceeds 48KB quota"; exit 1; }
 
       - name: Upload artifacts
