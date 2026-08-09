@@ -94,13 +94,14 @@ ehthumbs.db
 desktop.ini
 
 # ---------- CMake / 编译数据库 ----------
+# 注意：只忽略 build/ 目录里 CMake 自动生成的文件，不能全局忽略 *.cmake 或 Makefile
+# 否则会误伤项目自己的 toolchain .cmake 文件和顶层 Makefile
 CMakeFiles/
 CMakeCache.txt
-cmake_install.cmake
-Makefile
-install_manifest.txt
+**/build/cmake_install.cmake
+**/build/install_manifest.txt
+**/build/Makefile
 compile_commands.json
-*.cmake
 
 # ---------- clangd 缓存 ----------
 .cache/
